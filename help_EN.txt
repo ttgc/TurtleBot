@@ -1,0 +1,8 @@
+```
+Command Help :
+/setlang lang - Set your own language. lang is the new language, there are only 2 language available : EN or FR
+/tell msg - Ask to the bot to send a message for you. Keep in mind, that we are saving who is asking it to the bot in log file
+/rules - Show the rules
+/yay - Use the YAY Powaaaaaaaa !
+/profil [mention] - Display the profile of the mentioned person if precised, else display your own profile
+```

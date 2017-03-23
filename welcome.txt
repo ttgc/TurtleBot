@@ -1,0 +1,19 @@
+```
+Welcome to you on Skycraft Discord Server !
+Please read the rules of the server before using it. Try to respect it, and if someone does not, please report them to moderators or admins.
+By default, your langage is set on EN, you can change it with '/setlang' command.
+Type '/help' to have a full list of commands and '/rules' to consult the rules.
+Have a nice game !
+
+Skycraft Staff
+
+------------------------------
+
+Bonjour à toi sur le serveur Discord de Skycraft !
+Lis les règles du serveur avant de poster. Essaye de les respecter et si quelqu'un ne le fais pas, signale le aux modos ou admins.
+Par défaut la langue est réglée sur EN, tu peux la changer avec la commande '/setlang'.
+Utilise '/help' pour avoir la liste détaillée des commandes et '/rules' pour consulter les règles.
+Have a nice game !
+
+Skycraft Staff
+```

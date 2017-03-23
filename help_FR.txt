@@ -1,0 +1,8 @@
+```
+Commandes Aide :
+/setlang lang - Change ta propre langue, lang est la nouvelle langue souhaitée. Seules deux langues sont disponibles : EN ou FR
+/tell msg - Demande au bot d'envoyer un message à ta place. Les message et leurs auteurs seront conservé dans les fichiers log.
+/rules - Affiche les rgèles
+/yay - Utilise le pouvoir du YAY !
+/profil [mention] - Affiche le profil de la personne mentionnée si précisée, sinon affiche le profil de celui qui utilise la commande
+```
