@@ -9,7 +9,7 @@ import time
 from logfile import *
 from INIfiles import *
 
-global prefix,logf,config,lang,guild
+global prefix,logf,config,lang,guild,report
 prefix = "/"
 
 logger = logging.getLogger('discord')
@@ -31,13 +31,28 @@ def convert_str_into_dic(string):
         dic[temp[0]] = temp[1]
     return dic
 
+def convert_str_into_ls_spe(string):
+    if string == "{}": return []
+    string = string.replace("{","")
+    string = string.replace("}","")
+    string = string.replace("'","")
+    ls = string.split(", ")
+    return ls
+
+def convert_ls_into_str_spe(ls):
+    string = str(ls)
+    string = string.replace("[","{")
+    string = string.replace("]","}")
+    return string
+
 def save_data():
-    global prefix,config,strikes,guild,guildlink
+    global prefix,config,strikes,guild,guildlink,report
     config.key_add("main","prefix",prefix)
     config.key_add("main","lang",str(lang))
     config.key_add("main","strikes",str(strikes))
     config.key_add("main","guild",str(guild))
     config.key_add("main","guild_link",str(guildlink))
+    config.key_add("main","report",convert_ls_into_str_spe(report))
     config.save("config")
 
 client = discord.Client()
@@ -54,7 +69,7 @@ def on_ready():
 @client.event
 @asyncio.coroutine
 def on_message(message):
-    global prefix,logf,lang,strikes,guild,guildlink
+    global prefix,logf,lang,strikes,guild,guildlink,report
     #check roles
     logf.restart()
     admin = modo = restricted = False
@@ -102,7 +117,7 @@ def on_message(message):
         prefix = (message.content).replace(prefix+'setprefix ',"")
         logf.append("/setprefix","Changing command prefix into : "+prefix)
         yield from client.send_message(message.channel,"Changing command prefix into : "+prefix)
-    if message.content.startswith(prefix+'profil'):
+    if message.content.startswith(prefix+'profil') and serv:
         if len(message.mentions) != 0:
             profil = message.mentions[0]
         else:
@@ -120,13 +135,20 @@ def on_message(message):
         try: gd = guild[str(profil.id)]
         except KeyError: gd = "Indep"
         embd = discord.Embed(title=profil.name,description="User Profile",colour=profil.top_role.color)
-        embd.set_footer(text="Skycraft Discord Profile : http://skycraft.tech/",icon_url="http://skycraft.tech/wp-content/uploads/2016/08/cropped-Computercraft.png")
+        embd.set_footer(text="Skycraft Discord Profile",icon_url="http://skycraft.tech/wp-content/uploads/2016/08/cropped-Computercraft.png")
         embd.set_image(url=profil.avatar_url)
         embd.add_field(name="Language :",value=lang[str(profil.id)],inline=True)
         embd.add_field(name="Rank :",value=rol,inline=True)
         embd.add_field(name="Strike :",value=str(strik),inline=True)
         embd.add_field(name="Faction :",value=gd,inline=True)
         yield from client.send_message(message.channel,embed=embd)
+    if message.content.startswith(prefix+'website'):
+        yield from client.send_message(message.channel,"http://skycraft.tech")
+    if message.content.startswith(prefix+'report') and serv and (not restricted):
+        if len(message.mentions) != 0:
+            for i in message.mentions:
+                report.append(i.name)
+                yield from client.send_message(message.channel,i.mention+" reported by "+message.author.mention)
     #moderation commands
     if message.content.startswith(prefix+'strike') and modo and serv and (not restricted):
         if len(message.mentions) != 0:
@@ -141,9 +163,13 @@ def on_message(message):
                 except KeyError:
                     strikes[str(i.id)] = 1
                 if lang[str(i.id)] == "FR":
-                    yield from client.send_message(message.channel,i.mention+"\n```\nVous avez reçu de la part de l'équipe un avertissement !\nVous avez reçu cet avertissement pour ne pas avoir respecté les regles d'utilisation du serveur discord visible en utilisant la commande '/rules'\nEn cas de récidive des sanctions seront automatiquement appliquées pouvant aller jusqu'au kick ou ban def suivant le tableau suivant :\n1 Strike = rien\n2 Strikes = rien\n3 Strikes = restriction\n4 Strikes = kick\n5 Strikes = Perma ban\n\nVeuillez respecter les règles du serveur pour éviter tout nouvel avertissement\nMerci de votre compréhension\n```")
+                    embd = discord.Embed(title="Strike",description="Vous avez reçu de la part de l'équipe un avertissement !\nVous avez reçu cet avertissement pour ne pas avoir respecté les regles d'utilisation du serveur discord visible en utilisant la commande '/rules'\nEn cas de récidive des sanctions seront automatiquement appliquées pouvant aller jusqu'au kick ou ban def suivant le tableau suivant :\n1 Strike = rien\n2 Strikes = rien\n3 Strikes = restriction\n4 Strikes = kick\n5 Strikes = Perma ban\n\nVeuillez respecter les règles du serveur pour éviter tout nouvel avertissement\nMerci de votre compréhension",colour=discord.Color(int("ff0000",16)))
+                    embd.add_field(name="Nombre de strike reçus :",value=str(strikes[str(i.id)]),inline=False)
+                    yield from client.send_message(message.channel,i.mention+"\n",embed=embd)
                 else:
-                    yield from client.send_message(message.channel,i.mention+"\n```\nYou have got a strike from the staff !\nYou have got it for unrespect of the rules of the discord server that you can claim with the '/rules' command\nIn case of a new strike, you would probably get an automatic penalization including kick or perma ban following this table :\n1 Strike = Nothing\n2 Strikes = Nothing\n3 Strikes = Restrictions\n4 Strikes = kick\n5 Strikes = Perma ban\n\nPlease respect the rules of the server to avoid a new strike\nThanks to your understanding\n```")
+                    embd = discord.Embed(title="Strike",description="You have got a strike from the staff !\nYou have got it for unrespect of the rules of the discord server that you can claim with the '/rules' command\nIn case of a new strike, you would probably get an automatic penalization including kick or perma ban following this table :\n1 Strike = Nothing\n2 Strikes = Nothing\n3 Strikes = Restrictions\n4 Strikes = kick\n5 Strikes = Perma ban\n\nPlease respect the rules of the server to avoid a new strike\nThanks to your understanding",colour=discord.Color(int("ff0000",16)))
+                    embd.add_field(name="Strikes received :",value=str(strikes[str(i.id)]),inline=False)
+                    yield from client.send_message(message.channel,i.mention+"\n",embed=embd)
                 if strikes[str(i.id)] == 4: yield from client.kick(i)
                 if strikes[str(i.id)] == 5:
                     yield from client.send_message(message.channel,"```\n"+i.mention+" Has been perma-banned due to a high strikes number")
@@ -161,6 +187,7 @@ def on_message(message):
                 try: strikes[str(i.id)] -= 1
                 except KeyError: return
                 if strikes[str(i.id)] == 0: del(strikes[str(i.id)])
+                yield from client.send_message(message.channel,i.mention+" unstriked successful")
     if message.content.startswith(prefix+'faction') and serv:
         if message.content.startswith(prefix+'faction create') and modo:
             name = (message.content).replace(prefix+'faction create ',"")
@@ -240,7 +267,22 @@ def on_message(message):
                     yield from client.remove_roles(message.author,hierarchy[5])
             else:
                 yield from client.send_message(message.channel,message.author.mention+" You doesn't belong to any faction")
-                        
+    if message.content.startswith(prefix+'showreport') and modo:
+        yield from client.send_message(message.channel,str(report))
+    if message.content.startswith(prefix+'cleanreport') and modo:
+        nbr = (message.content).replace(prefix+'cleanreport',"")
+        try: nbr = int(nbr)
+        except ValueError: nbr = -1
+        if nbr == -1:
+            report = []
+            yield from client.send_message(message.channel,"Reports cleaned")
+        else:
+            for i in range(nbr):
+                try: del(report[0])
+                except IndexError:
+                    i -= 1
+                    break
+            yield from client.send_message(message.channel,str(i+1)+" reports cleaned")
     #helping commands
     if message.content.startswith(prefix+'help'):
         if fr: f = open("help_FR.txt","r")
@@ -304,7 +346,7 @@ def main_task():
     yield from client.connect()
 
 def launch():
-    global logf,prefix,config,lang,strikes,guild,guildlink
+    global logf,prefix,config,lang,strikes,guild,guildlink,report
     logsys = LogSystem()
     logsys.limit = 20
     logsys.directory = "Logs/local"
@@ -317,8 +359,11 @@ def launch():
     prefix = config.section["main"]["prefix"]
     lang = convert_str_into_dic(config.section["main"]["lang"])
     strikes = convert_str_into_dic(config.section["main"]["strikes"])
+    for i in strikes.keys():
+        strikes[i] = int(strikes[i])
     guild = convert_str_into_dic(config.section["main"]["guild"])
     guildlink = convert_str_into_dic(config.section["main"]["guild_link"])
+    report = convert_str_into_ls_spe(config.section["main"]["report"])
     logf.append("Initializing","Bot initialized successful")
     logf.stop()
 
