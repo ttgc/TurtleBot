@@ -9,7 +9,7 @@ import time
 from logfile import *
 from INIfiles import *
 
-global prefix,logf,config,lang,guild,report
+global prefix,logf,config,lang,guild,report,pray
 prefix = "/"
 
 logger = logging.getLogger('discord')
@@ -45,14 +45,30 @@ def convert_ls_into_str_spe(ls):
     string = string.replace("]","}")
     return string
 
+def find_max(ls):
+    count = {}
+    for i in ls:
+        if not i in count: count[i] = 0
+        count[i] += 1
+    result = None
+    for i in count.keys():
+        if result == None:
+            result = i
+            continue
+        if count[i] >= count[result]:
+            result = i
+    return result
+
 def save_data():
-    global prefix,config,strikes,guild,guildlink,report
+    global prefix,config,strikes,guild,guildlink,report,pray
     config.key_add("main","prefix",prefix)
     config.key_add("main","lang",str(lang))
     config.key_add("main","strikes",str(strikes))
     config.key_add("main","guild",str(guild))
     config.key_add("main","guild_link",str(guildlink))
     config.key_add("main","report",convert_ls_into_str_spe(report))
+    for i in pray.keys():
+        config.key_add("gods",i,convert_ls_into_str_spe(pray[i]))
     config.save("config")
 
 client = discord.Client()
@@ -69,7 +85,7 @@ def on_ready():
 @client.event
 @asyncio.coroutine
 def on_message(message):
-    global prefix,logf,lang,strikes,guild,guildlink,report
+    global prefix,logf,lang,strikes,guild,guildlink,report,pray
     #check roles
     logf.restart()
     admin = modo = restricted = False
@@ -141,6 +157,14 @@ def on_message(message):
         embd.add_field(name="Rank :",value=rol,inline=True)
         embd.add_field(name="Strike :",value=str(strik),inline=True)
         embd.add_field(name="Faction :",value=gd,inline=True)
+        if not str(profil.id) in pray:
+            mpray = "none"
+            lpray = "none"
+        else:
+            mpray = find_max(pray[str(profil.id)])
+            lpray = pray[str(profil.id)][-1]
+        embd.add_field(name="Most Prayed God :",value=mpray,inline=True)
+        embd.add_field(name="Latest Prayed God :",value=lpray,inline=True)
         yield from client.send_message(message.channel,embed=embd)
     if message.content.startswith(prefix+'website'):
         yield from client.send_message(message.channel,"http://skycraft.tech")
@@ -149,6 +173,36 @@ def on_message(message):
             for i in message.mentions:
                 report.append(i.name)
                 yield from client.send_message(message.channel,i.mention+" reported by "+message.author.mention)
+    if message.content.startswith(prefix+'gods'):
+        if message.content.startswith(prefix+'gods list'):
+            f = open("gods.txt","r")
+            ls = f.readlines()
+            f.close()
+            for i in range(len(ls)):
+                ls[i] = ls[i].replace("\n","")
+            if fr: f = open("godsatt_FR.txt","r")
+            else: f = open("godsatt_EN.txt","r")
+            att = f.readlines()
+            f.close()
+            for i in range(len(att)):
+                att[i] = att[i].replace("\n","")
+            if fr: embd = discord.Embed(title="Dieux",description="Il y a actuellement 18 Dieux dont l'existence est prouvée",colour=discord.Color(int("ffffff",16)))
+            else: embd = discord.Embed(title="Gods",description="There are currently 18 gods recorded",colour=discord.Color(int("ffffff",16)))
+            embd.set_footer(text="Skycraft Gods List")
+            for i in range(len(ls)):
+                embd.add_field(name=ls[i],value=att[i],inline=True)
+            yield from client.send_message(message.channel,embed=embd)
+        if message.content.startswith(prefix+'gods pray'):
+            f = open("gods.txt","r")
+            ls = f.readlines()
+            f.close()
+            for i in range(len(ls)):
+                ls[i] = ls[i].replace("\n","")
+            god = (message.content).replace(prefix+'gods pray ',"")
+            if god in ls:
+                if not str(message.author.id) in pray: pray[str(message.author.id)] = []
+                pray[str(message.author.id)].append(god)
+                yield from client.send_message(message.channel,message.author.mention+" prayed "+god)
     #moderation commands
     if message.content.startswith(prefix+'strike') and modo and serv and (not restricted):
         if len(message.mentions) != 0:
@@ -300,9 +354,7 @@ def on_message(message):
             chan = message.author
         if fr: f = open("Rules_FR.txt","r")
         else: f = open("Rules_EN.txt","r")
-        msg = f.read().split("\n\n")
-        for i in msg:
-            yield from client.send_message(chan,i)
+        yield from client.send_message(chan,f.read())
         f.close()
         if (not modo) and serv:
             if fr: yield from client.send_message(message.channel,"Je t'ai envoyé un message privé "+message.author.mention)
@@ -346,7 +398,7 @@ def main_task():
     yield from client.connect()
 
 def launch():
-    global logf,prefix,config,lang,strikes,guild,guildlink,report
+    global logf,prefix,config,lang,strikes,guild,guildlink,report,pray
     logsys = LogSystem()
     logsys.limit = 20
     logsys.directory = "Logs/local"
@@ -364,6 +416,9 @@ def launch():
     guild = convert_str_into_dic(config.section["main"]["guild"])
     guildlink = convert_str_into_dic(config.section["main"]["guild_link"])
     report = convert_str_into_ls_spe(config.section["main"]["report"])
+    pray = dict(config.section["gods"])
+    for i in pray.keys():
+        pray[i] = convert_str_into_ls_spe(pray[i])
     logf.append("Initializing","Bot initialized successful")
     logf.stop()
 
