@@ -86,6 +86,8 @@ def on_ready():
 @asyncio.coroutine
 def on_message(message):
     global prefix,logf,lang,strikes,guild,guildlink,report,pray
+    #check bot
+    if message.author.bot: return
     #check roles
     logf.restart()
     admin = modo = restricted = False
@@ -138,18 +140,19 @@ def on_message(message):
             profil = message.mentions[0]
         else:
             profil = message.author
-        col = discord.Color(0).green()
         try: strik = strikes[str(profil.id)]
         except KeyError: strik = 0
         if not serv: rol = "Undefined"
         else:
-            if profil.top_role == hierarchy[0]: rol = "Admin"
+            if profil.bot: rol = "Bot"
+            elif profil.top_role == hierarchy[0]: rol = "Admin"
             elif profil.top_role == hierarchy[1]: rol = "Modo"
             elif profil.top_role == hierarchy[2]: rol = "Dev"
             elif profil.top_role == hierarchy[3]: rol = "VIP"
             else: rol = "Player"
         try: gd = guild[str(profil.id)]
         except KeyError: gd = "Indep"
+        if profil.bot: gd = "None"
         embd = discord.Embed(title=profil.name,description="User Profile",colour=profil.top_role.color)
         embd.set_footer(text="Skycraft Discord Profile",icon_url="http://skycraft.tech/wp-content/uploads/2016/08/cropped-Computercraft.png")
         embd.set_image(url=profil.avatar_url)

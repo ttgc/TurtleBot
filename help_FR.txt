@@ -5,4 +5,11 @@ Commandes Aide :
 /rules - Affiche les rgèles
 /yay - Utilise le pouvoir du YAY !
 /profil [mention] - Affiche le profil de la personne mentionnée si précisée, sinon affiche le profil de celui qui utilise la commande
+/faction add @mention - Réservé au leaders - Ajoutes les personnes mentionnées dans votre faction
+/faction remove @mention - Réservé au leaders - Retire les personnes mentionnées de votre faction
+/faction leave - Quitter votre faction
+/website - Envoie le lien vers le site web
+/report @mention - Signale les joueurs mentionnées
+/gods list - Affiche la liste des dieux du serveur
+/gods pray name - Prie le dieu *name*
 ```

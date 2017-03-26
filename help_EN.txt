@@ -5,4 +5,11 @@ Command Help :
 /rules - Show the rules
 /yay - Use the YAY Powaaaaaaaa !
 /profil [mention] - Display the profile of the mentioned person if precised, else display your own profile
+/faction add @mention - Leader Only - Add members mentionned to your faction
+/faction remove @mention - Leader Only - Remove members mentionned from your faction
+/faction leave - Leave your faction
+/website - Send link to the website
+/report @mention - Report mentionned members
+/gods list - Show the list of the gods of the server
+/gods pray name - Pray the god called *name*
 ```
