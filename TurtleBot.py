@@ -8,9 +8,11 @@ import os
 import time
 from logfile import *
 from INIfiles import *
+from random import *
 
-global prefix,logf,config,lang,guild,report,pray
+global prefix,logf,config,lang,guild,report,pray,statut
 prefix = "/"
+statut = discord.Game(name="/help")
 
 logger = logging.getLogger('discord')
 logging.basicConfig(level=logging.INFO)
@@ -85,7 +87,7 @@ def on_ready():
 @client.event
 @asyncio.coroutine
 def on_message(message):
-    global prefix,logf,lang,strikes,guild,guildlink,report,pray
+    global prefix,logf,lang,strikes,guild,guildlink,report,pray,statut
     #check bot
     if message.author.bot: return
     #check roles
@@ -206,6 +208,26 @@ def on_message(message):
                 if not str(message.author.id) in pray: pray[str(message.author.id)] = []
                 pray[str(message.author.id)].append(god)
                 yield from client.send_message(message.channel,message.author.mention+" prayed "+god)
+    if message.content.startswith(prefix+'quote') and serv and (not restricted):
+        tags = message.content.replace(prefix+'quote ',"").split(" ")
+        lsresult = []
+        chan = message.channel
+        auth = message.author
+        content = message.content
+        yield from client.delete_message(message)
+        cache = client.messages
+        cache = cache.reverse()
+        for i in tags:
+            search = lambda m: i in m.content
+            temp = discord.utils.find(search,client.messages)
+            if temp is not None and temp.content is not content: lsresult.append(temp)
+        result = find_max(lsresult)
+        if result is None:
+            yield from client.send_message(chan,"No message found "+auth.mention)
+            return
+        embd = discord.Embed(title="Quotation from "+result.author.name,description=result.content,colour=discord.Color(randint(0,16777215)))
+        embd.set_footer(text=(str(result.timestamp).split("."))[0])
+        yield from client.send_message(chan,auth.mention+" :",embed=embd)
     #moderation commands
     if message.content.startswith(prefix+'strike') and modo and serv and (not restricted):
         if len(message.mentions) != 0:
@@ -367,6 +389,17 @@ def on_message(message):
         print("running debug instruction : "+msg)
         logf.append("/debug","running debug instruction : "+msg)
         exec(msg)
+##    ###DEBUG###
+##    for i in message.server.members:
+##        if str(i.id) not in lang:
+##            lang[str(i.id)] = "EN"
+##            channel = discord.utils.get(client.get_all_channels(), server__name='Skycraft', name='general')
+##            yield from client.send_message(channel,"Welcome to "+i.mention)
+##            f = open("welcome.txt","r")
+##            yield from client.send_message(i,f.read())
+##            f.close()
+##    ###FIN DEBUG###
+    yield from client.change_presence(game=statut)
     logf.stop()
     save_data()
 
@@ -385,6 +418,8 @@ def on_member_join(member):
     logf.stop()
     save_data()
 
+@client.event
+@asyncio.coroutine
 def on_member_remove(member):
     global lang
     logf.restart()
