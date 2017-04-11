@@ -7,3 +7,6 @@ Music Functions including :
   /play
   /vocal on|off
   /soundeffect
+
+** One day **
+Port on LUA so it can be used in a turtle
