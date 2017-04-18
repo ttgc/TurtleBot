@@ -475,6 +475,12 @@ def on_message(message):
         vocalsys.play()
     if message.content.startswith(prefix+'skip') and serv and (not restricted):
         vocalsys.skip()
+    if message.content.startswith(prefix+'showqueue') and serv and (not restricted):
+        string = "Vocal Queue :```diff\n"
+        for i in vocalsys.queue:
+            string += ("+**"+i.title+"** by "+i.uploader+"\n")
+        string += "```"
+        yield from client.send_message(message.channel,string)
     #helping commands
     if message.content.startswith(prefix+'help'):
         if fr: f = open("help_FR.txt","r")
