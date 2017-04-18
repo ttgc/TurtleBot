@@ -9,10 +9,13 @@ import time
 from logfile import *
 from INIfiles import *
 from random import *
+from mojangapi import *
+from VocalUtilities import *
 
-global prefix,logf,config,lang,guild,report,pray,statut
+global prefix,logf,config,lang,guild,report,pray,statut,vocalsys
 prefix = "/"
 statut = discord.Game(name="/help")
+vocalsys = VocalSystem()
 
 logger = logging.getLogger('discord')
 logging.basicConfig(level=logging.INFO)
@@ -83,11 +86,14 @@ def on_ready():
     logf.restart()
     logf.append("Initializing","Bot is now ready")
     logf.stop()
+##    f = open("turtle.png","rb")
+##    yield from client.edit_profile(avatar=f.read())
+##    f.close()
 
 @client.event
 @asyncio.coroutine
 def on_message(message):
-    global prefix,logf,lang,strikes,guild,guildlink,report,pray,statut
+    global prefix,logf,lang,strikes,guild,guildlink,report,pray,statut,vocalsys
     #check bot
     if message.author.bot: return
     #check roles
@@ -158,6 +164,7 @@ def on_message(message):
         embd = discord.Embed(title=profil.name,description="User Profile",colour=profil.top_role.color)
         embd.set_footer(text="Skycraft Discord Profile",icon_url="http://skycraft.tech/wp-content/uploads/2016/08/cropped-Computercraft.png")
         embd.set_image(url=profil.avatar_url)
+        embd.set_thumbnail(url="http://skycraft.tech/wp-content/uploads/2016/08/Skycraft.png")
         embd.add_field(name="Language :",value=lang[str(profil.id)],inline=True)
         embd.add_field(name="Rank :",value=rol,inline=True)
         embd.add_field(name="Strike :",value=str(strik),inline=True)
@@ -172,7 +179,13 @@ def on_message(message):
         embd.add_field(name="Latest Prayed God :",value=lpray,inline=True)
         yield from client.send_message(message.channel,embed=embd)
     if message.content.startswith(prefix+'website'):
-        yield from client.send_message(message.channel,"http://skycraft.tech")
+        embd = discord.Embed(title="Skycraft",description="Moded Role Play Minecraft Server using 1.7.10",colour=discord.Color(int("7289da",16)),url="http://skycraft.tech")
+        embd.set_footer(text="Skycraft Server",icon_url="http://skycraft.tech/wp-content/uploads/2016/08/cropped-Computercraft.png")
+        embd.set_thumbnail(url="http://skycraft.tech/wp-content/uploads/2016/08/Skycraft.png")
+        embd.add_field(name="Mods :",value="Aether, Computercraft, Thaumcraft, IndustrialCraft2, BuildCraft, Archimed's ships +",inline=False)
+        embd.add_field(name="IP for joining :",value="Genius.playat.ch",inline=False)
+        embd.add_field(name="Minecraft Version :",value="1.7.10",inline=True)
+        yield from client.send_message(message.channel,embed=embd)
     if message.content.startswith(prefix+'report') and serv and (not restricted):
         if len(message.mentions) != 0:
             for i in message.mentions:
@@ -210,18 +223,35 @@ def on_message(message):
                 yield from client.send_message(message.channel,message.author.mention+" prayed "+god)
     if message.content.startswith(prefix+'quote') and serv and (not restricted):
         tags = message.content.replace(prefix+'quote ',"").split(" ")
-        lsresult = []
+        if len(tags) == 0: return
+        elif len(tags) > 1:
+            while "" in tags:
+                tags.remove("")
+            if len(tags) > 2: del(tags[2:])
+            #if tags[1] == "": del(tags[1])
+        else:
+            tags.append(message.channel.id)
+        search_chan = client.get_channel(tags[1])
+        if search_chan is None:
+            yield from client.send_message(chan,"Channel not found "+auth.mention)
+            return
+        try:
+            yield from result = client.get_message(search_chan,tags[0])
+        except discord.NotFound:
+            result = None
+##        tags = message.content.replace(prefix+'quote ',"").split(" ")
+##        lsresult = []
         chan = message.channel
         auth = message.author
         content = message.content
         yield from client.delete_message(message)
-        cache = client.messages
-        cache = cache.reverse()
-        for i in tags:
-            search = lambda m: i in m.content
-            temp = discord.utils.find(search,client.messages)
-            if temp is not None and temp.content is not content: lsresult.append(temp)
-        result = find_max(lsresult)
+##        cache = client.messages
+##        cache = cache.reverse()
+##        for i in tags:
+##            search = lambda m: i in m.content
+##            temp = discord.utils.find(search,client.messages)
+##            if temp is not None and temp.content is not content: lsresult.append(temp)
+##        result = find_max(lsresult)
         if result is None:
             yield from client.send_message(chan,"No message found "+auth.mention)
             return
@@ -362,6 +392,89 @@ def on_message(message):
                     i -= 1
                     break
             yield from client.send_message(message.channel,str(i+1)+" reports cleaned")
+    if message.content.startswith(prefix+'reroll') and serv and admin and (not restricted): #Still on Developement
+        if True: return #Avoid usage of this
+        #Validation
+        valid = None
+        yield from client.send_message(message.channel,message.author.mention+"\n**The requested command is a dangerous command and will restart the minecraft server, it will also delete player data so do not use it for troll !\n:warning: Are you sure you want to run this command, answer 'Yes' to run it (this request will timeout in 30s) :warning:**")
+        yield from valid = client.wait_for_message(timeout=30.0,author=message.author,channel=message.channel,content="Yes")
+        if valid is None: return
+        yield from client.send_message(message.channel,":warning: **Starting Reroll Operation** :warning:")
+        logf.append("/reroll","Starting a reroll")
+        #Get UUID
+        api = MojangAPI()
+        pseudo = message.content.replace(prefix+'reroll ',"")
+        uuid = api.get_uuid(pseduo)
+        logf.append("/reroll","uuid to reroll : "+uuid+" - "+pseudo)
+        valid = None
+        yield from client.send_message(message.channel,"The following UUID will be reroll :\n```diff\n+"+uuid+" ("+pseudo+")\n```\nAnswer 'STOP' to interupt the reroll (timeout in 60s)")
+        yield from valid = client.wait_for_message(timeout=60.0,author=message.author,channel=message.channel,content="STOP")
+        if valid is not None:
+            logf.append("/reroll","interupted")
+            yield from client.send_message(message.channel,"Reroll canceled")
+            return
+        #Shutdown Server
+        logf.append("/reroll","Shutdown server")
+        #Remove files
+        logf.append("/reroll","removing files")
+        directory = "../mc-instances/mc-57da87a88eec5/"
+        data_dir = directory+"Gaea/playerdata/"
+        uuid_file = uuid[:8]+"-"+uuid[8:12]+"-"+uuid[12:16]+"-"+uuid[16:20]+"-"+uuid[20:]
+        for i in [pseudo+".baub",pseudo+".baubback",pseudo+".thaum",pseudo+".thaumback","aether/"+uuid_file+".dat","spawning/"+uuid_file+".dat",uuid_file+".dat"]:
+            if os.access(data_dir+i,os.F_OK):
+                os.remove(data_dir+i)
+                logf.append("/reroll","removed "+data_dir+i)
+                yield from client.send_message(message.channel,"removed "+data_dir+i)
+        #Unban
+        logf.append("/reroll","Player unbanned")
+        yield client.send_message(message.channel,"Player unbanned")
+        #Reboot Server
+        logf.append("/reroll","Reboot Server")
+        yield client.send_message(message.channel,"End of reroll")
+    #vocal commands
+    if message.content.startswith(prefix+'vocal') and serv and (not restricted):
+        msg = (message.content).replace(prefix+'vocal ',"")
+        msg = msg.lower()
+        if msg == "on" and not client.is_voice_connected(message.server):
+            if message.author.voice.is_afk or message.author.voice.voice_channel is None:
+                yield from client.send_message(message.channel,"Sorry "+message.auhtor.mention+" You are not in a vocal channel")
+                return
+            yield from vocalsys.join(message.author.voice.voice_channel)
+##            vocal = True
+##            vocalco = yield from client.join_voice_channel(message.author.voice.voice_channel)
+##            vocaltimer = VocalTimeout(60)
+##            vocaltimer.start()
+        elif msg == "off" and client.is_voice_connected(message.server) and modo:
+            yield from vocalsys.leave()
+##            vocal = False
+##            yield from vocalco.disconnect()
+    if message.content.startswith(prefix+'play') and serv and (not restricted):
+        if not vocalsys.vocal:
+            yield from client.send_message(message.channel,message.author.mention+"Use /vocal on before using vocal commands")
+            return
+        tag = message.content.replace(prefix+'play ',"")
+        if "https://www.youtube.com" in tag:
+            url = tag
+        else:
+            tag = tag.split(" ")
+            while "" in tag: tag.remove("")
+            url = "https://www.youtube.com/results?search_query="
+            first = True
+            for i in tag:
+                if not first: url += "+"
+                url += tag
+                first = False
+            url += "&page=1"
+        yield from vocalsys.append(url)
+        vocalsys.play()
+    if message.content.startswith(prefix+'soundeffect') and serv and modo and (not restricted):
+        if not vocalsys.vocal:
+            yield from client.send_message(message.channel,message.author.mention+"Use /vocal on before using vocal commands")
+            return
+        yield from vocalsys.append("Music/"+message.content.replace(prefix+'soundeffect ',""),False)
+        vocalsys.play()
+    if message.content.startswith(prefix+'skip') and serv and (not restricted):
+        vocalsys.skip()
     #helping commands
     if message.content.startswith(prefix+'help'):
         if fr: f = open("help_FR.txt","r")
@@ -434,6 +547,7 @@ def on_member_remove(member):
 def main_task():
     yield from client.login("MjM0NzAzOTQ5NDMxNzAxNTE1.C7GGhg.Wu8emIflGvVLm7GejPay_U8Bufg")
     yield from client.connect()
+    yield from client.wait_until_ready()
 
 def launch():
     global logf,prefix,config,lang,strikes,guild,guildlink,report,pray
