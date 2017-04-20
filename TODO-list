@@ -1,12 +1,10 @@
 TODO List :
 
 /ping
-/reroll
+/reroll - **On dev**
 
 Music Functions including :
-  /play
-  /vocal on|off
-  /soundeffect
+  /play - **May have some issue with youtube videos**
 
-** One day **
-Port on LUA so it can be used in a turtle
+~~** One day **
+Port on LUA so it can be used in a turtle~~
