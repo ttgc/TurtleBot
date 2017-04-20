@@ -1,15 +1,21 @@
 ```
 Commandes Aide :
-/setlang lang - Change ta propre langue, lang est la nouvelle langue souhaitée. Seules deux langues sont disponibles : EN ou FR
-/tell msg - Demande au bot d'envoyer un message à ta place. Les message et leurs auteurs seront conservé dans les fichiers log.
-/rules - Affiche les rgèles
+/setlang lang - Change ta propre langue, lang est la nouvelle langue souhaitee. Seules deux langues sont disponibles : EN ou FR
+/tell msg - Demande au bot d'envoyer un message a ta place. Les message et leurs auteurs seront conserve dans les fichiers log.
+/rules - Affiche les regles
 /yay - Utilise le pouvoir du YAY !
-/profil [mention] - Affiche le profil de la personne mentionnée si précisée, sinon affiche le profil de celui qui utilise la commande
-/faction add @mention - Réservé au leaders - Ajoutes les personnes mentionnées dans votre faction
-/faction remove @mention - Réservé au leaders - Retire les personnes mentionnées de votre faction
+/profil [mention] - Affiche le profil de la personne mentionnee si precisee, sinon affiche le profil de celui qui utilise la commande
+/faction add @mention - Reserve au leaders - Ajoutes les personnes mentionnees dans votre faction
+/faction remove @mention - Reserve au leaders - Retire les personnes mentionnees de votre faction
 /faction leave - Quitter votre faction
 /website - Envoie le lien vers le site web
-/report @mention - Signale les joueurs mentionnées
+/report @mention - Signale les joueurs mentionnees
 /gods list - Affiche la liste des dieux du serveur
 /gods pray name - Prie le dieu *name*
+/quote IDmessage [IDchannel] - Cite le message ayant pour ID celui indique, l'ID du channel est facultatif, s'il est manquant le message sera recherche directement dans le channel actuel
+/claimprogram ID/path - Recupere et affiche le programme du computer ou turtle minecraft avec ID l'identifiant du computer/turtle et path le chemin pour acceder au programme
+/vocal on|off - Fait rejoindre ou quitter le vocal au bot, pour rejoindre il faut etre dans les channels musique
+/play yt - Ajoute a la liste de lecture la video 'yt' qui peut etre une url ou simplement une recherche (par exemple '/play recherche video')
+/showqueue - Affiche la liste de lecture
+/skip - Passe a la video suivante dans la liste de lecture
 ```

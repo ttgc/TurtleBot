@@ -265,6 +265,14 @@ def on_message(message):
         embd.set_footer(text=(str(result.timestamp).split("."))[0])
         embd.set_author(name=result.author.name,icon_url=result.author.avatar_url)
         yield from client.send_message(chan,auth.mention+" :",embed=embd)
+    if message.content.startswith(prefix+'claimprogram') and serv and (not restricted):
+        path = message.content.replace(prefix+'claimprogram ',"")
+        directory = "../mc-instances/mc-57da87a88eec5/Gaea/computer/"
+        if os.access(directory+path,os.F_OK):
+            f = open(directory+path,"r")
+            yield from client.send_message(message.channel,"Claiming Program from **"+path+"**\n```lua\n"+f.read()+"\n```")
+        else:
+            yield from client.send_message(message.channel,"Unexisting Program")
     #moderation commands
     if message.content.startswith(prefix+'strike') and modo and serv and (not restricted):
         if len(message.mentions) != 0:
