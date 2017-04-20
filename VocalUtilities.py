@@ -26,11 +26,12 @@ class VocalSystem:
         self.current = None
         self.is_playing = False
         self.textchan = None
+        self.bot = None
 
     @asyncio.coroutine
     def join(self,chan,textchan):
         self.vocal = True
-        self.co = yield from client.join_voice_channel(chan)
+        self.co = yield from self.bot.join_voice_channel(chan)
         self.textchan = textchan
         self.timer.start()
 
@@ -41,7 +42,7 @@ class VocalSystem:
         if yt:
             song = yield from self.co.create_ytdl_player(path,ytdl_options={"noplaylist":True,"playlist_items":"1"},after=self.after)
         else:
-            song = create_ffmep_player(path,after=self.after)
+            song = self.co.create_ffmep_player(path,after=self.after)
         self.queue.append(song)
         self.timer.reset()
 
@@ -52,8 +53,10 @@ class VocalSystem:
             self.is_playing = False
             return
         self.is_playing = True
+        self.timer = VocalTimeout(60)
         self.queue[0].start()
         self.current = self.queue[0]
+        del(self.queue[0])
 
     def after(self):
         if not self.vocal: return
@@ -62,7 +65,7 @@ class VocalSystem:
         if not self.is_playing:
             self.current = None
             self.queue = []
-            self.timer = VocalTimeout(60)
+            #self.timer = VocalTimeout(60)
             self.timer.start()
 
     def skip(self):
@@ -70,7 +73,7 @@ class VocalSystem:
         if not self.is_playing: return
         if not self.current.is_done():
             self.current.stop()
-        del(self.queue[0])
+        #del(self.queue[0])
         #self.after()             
 
     @asyncio.coroutine
@@ -86,7 +89,7 @@ class VocalSystem:
 
     @asyncio.coroutine
     def _timeout_leave(self):
-        yield from client.send_message(self.textchan,"Leaving Voice for inactivity")
+        yield from self.bot.send_message(self.textchan,"Leaving Voice for inactivity")
         yield from self.leave()
 
 class VocalTimeout(Thread):
@@ -97,6 +100,7 @@ class VocalTimeout(Thread):
         self.from_ = None
         self.current = None
         self.timeout = False
+        self.loop = asyncio.get_event_loop()
 
     def run(self):
         self.from_ = time.clock()
@@ -109,7 +113,11 @@ class VocalTimeout(Thread):
         self.timeout = True
         system = VocalSystem()
         if self == system.timer:
-            asyncio.async(system._timeout_leave)
+            self.loop.create_task(system._timeout_leave())
+            #loop = asyncio.get_event_loop()
+            #asyncio.set_event_loop(loop)
+            #loop.run_until_complete(system._timeout_leave())
+            #asyncio.async(system._timeout_leave())
 
     def reset(self):
         self.from_ = time.clock()

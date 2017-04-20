@@ -6,6 +6,9 @@ import asyncio
 import logging
 import os
 import time
+import urllib.request as urllibr
+import urllib.parse as urllibp
+import re
 from logfile import *
 from INIfiles import *
 from random import *
@@ -77,6 +80,7 @@ def save_data():
     config.save("config")
 
 client = discord.Client()
+vocalsys.bot = client
 
 @client.event
 @asyncio.coroutine
@@ -165,6 +169,7 @@ def on_message(message):
         embd.set_footer(text="Skycraft Discord Profile",icon_url="http://skycraft.tech/wp-content/uploads/2016/08/cropped-Computercraft.png")
         embd.set_image(url=profil.avatar_url)
         embd.set_thumbnail(url="http://skycraft.tech/wp-content/uploads/2016/08/Skycraft.png")
+        embd.set_author(name=profil.name,icon_url=profil.avatar_url)
         embd.add_field(name="Language :",value=lang[str(profil.id)],inline=True)
         embd.add_field(name="Rank :",value=rol,inline=True)
         embd.add_field(name="Strike :",value=str(strik),inline=True)
@@ -182,6 +187,7 @@ def on_message(message):
         embd = discord.Embed(title="Skycraft",description="Moded Role Play Minecraft Server using 1.7.10",colour=discord.Color(int("7289da",16)),url="http://skycraft.tech")
         embd.set_footer(text="Skycraft Server",icon_url="http://skycraft.tech/wp-content/uploads/2016/08/cropped-Computercraft.png")
         embd.set_thumbnail(url="http://skycraft.tech/wp-content/uploads/2016/08/Skycraft.png")
+        embd.set_author(name=message.author.name,url="http://skycraft.tech",icon_url=message.author.avatar_url)
         embd.add_field(name="Mods :",value="Aether, Computercraft, Thaumcraft, IndustrialCraft2, BuildCraft, Archimed's ships +",inline=False)
         embd.add_field(name="IP for joining :",value="Genius.playat.ch",inline=False)
         embd.add_field(name="Minecraft Version :",value="1.7.10",inline=True)
@@ -236,7 +242,7 @@ def on_message(message):
             yield from client.send_message(chan,"Channel not found "+auth.mention)
             return
         try:
-            yield from result = client.get_message(search_chan,tags[0])
+            result = yield from client.get_message(search_chan,tags[0])
         except discord.NotFound:
             result = None
 ##        tags = message.content.replace(prefix+'quote ',"").split(" ")
@@ -257,6 +263,7 @@ def on_message(message):
             return
         embd = discord.Embed(title="Quotation from "+result.author.name,description=result.content,colour=discord.Color(randint(0,16777215)))
         embd.set_footer(text=(str(result.timestamp).split("."))[0])
+        embd.set_author(name=result.author.name,icon_url=result.author.avatar_url)
         yield from client.send_message(chan,auth.mention+" :",embed=embd)
     #moderation commands
     if message.content.startswith(prefix+'strike') and modo and serv and (not restricted):
@@ -274,10 +281,14 @@ def on_message(message):
                 if lang[str(i.id)] == "FR":
                     embd = discord.Embed(title="Strike",description="Vous avez reçu de la part de l'équipe un avertissement !\nVous avez reçu cet avertissement pour ne pas avoir respecté les regles d'utilisation du serveur discord visible en utilisant la commande '/rules'\nEn cas de récidive des sanctions seront automatiquement appliquées pouvant aller jusqu'au kick ou ban def suivant le tableau suivant :\n1 Strike = rien\n2 Strikes = rien\n3 Strikes = restriction\n4 Strikes = kick\n5 Strikes = Perma ban\n\nVeuillez respecter les règles du serveur pour éviter tout nouvel avertissement\nMerci de votre compréhension",colour=discord.Color(int("ff0000",16)))
                     embd.add_field(name="Nombre de strike reçus :",value=str(strikes[str(i.id)]),inline=False)
+                    embd.set_author(name=message.author.name,icon_url=message.author.avatar_url)
+                    embd.set_thumbnail(url="http://skycraft.tech/wp-content/uploads/2016/08/Skycraft.png")
                     yield from client.send_message(message.channel,i.mention+"\n",embed=embd)
                 else:
                     embd = discord.Embed(title="Strike",description="You have got a strike from the staff !\nYou have got it for unrespect of the rules of the discord server that you can claim with the '/rules' command\nIn case of a new strike, you would probably get an automatic penalization including kick or perma ban following this table :\n1 Strike = Nothing\n2 Strikes = Nothing\n3 Strikes = Restrictions\n4 Strikes = kick\n5 Strikes = Perma ban\n\nPlease respect the rules of the server to avoid a new strike\nThanks to your understanding",colour=discord.Color(int("ff0000",16)))
                     embd.add_field(name="Strikes received :",value=str(strikes[str(i.id)]),inline=False)
+                    embd.set_author(name=message.author.name,icon_url=message.author.avatar_url)
+                    embd.set_thumbnail(url="http://skycraft.tech/wp-content/uploads/2016/08/Skycraft.png")
                     yield from client.send_message(message.channel,i.mention+"\n",embed=embd)
                 if strikes[str(i.id)] == 4: yield from client.kick(i)
                 if strikes[str(i.id)] == 5:
@@ -397,7 +408,7 @@ def on_message(message):
         #Validation
         valid = None
         yield from client.send_message(message.channel,message.author.mention+"\n**The requested command is a dangerous command and will restart the minecraft server, it will also delete player data so do not use it for troll !\n:warning: Are you sure you want to run this command, answer 'Yes' to run it (this request will timeout in 30s) :warning:**")
-        yield from valid = client.wait_for_message(timeout=30.0,author=message.author,channel=message.channel,content="Yes")
+        valid = yield from client.wait_for_message(timeout=30.0,author=message.author,channel=message.channel,content="Yes")
         if valid is None: return
         yield from client.send_message(message.channel,":warning: **Starting Reroll Operation** :warning:")
         logf.append("/reroll","Starting a reroll")
@@ -408,7 +419,7 @@ def on_message(message):
         logf.append("/reroll","uuid to reroll : "+uuid+" - "+pseudo)
         valid = None
         yield from client.send_message(message.channel,"The following UUID will be reroll :\n```diff\n+"+uuid+" ("+pseudo+")\n```\nAnswer 'STOP' to interupt the reroll (timeout in 60s)")
-        yield from valid = client.wait_for_message(timeout=60.0,author=message.author,channel=message.channel,content="STOP")
+        valid = yield from client.wait_for_message(timeout=60.0,author=message.author,channel=message.channel,content="STOP")
         if valid is not None:
             logf.append("/reroll","interupted")
             yield from client.send_message(message.channel,"Reroll canceled")
@@ -436,10 +447,14 @@ def on_message(message):
         msg = (message.content).replace(prefix+'vocal ',"")
         msg = msg.lower()
         if msg == "on" and not client.is_voice_connected(message.server):
-            if message.author.voice.is_afk or message.author.voice.voice_channel is None:
-                yield from client.send_message(message.channel,"Sorry "+message.auhtor.mention+" You are not in a vocal channel")
+            if message.author.voice.voice_channel is None:
+                yield from client.send_message(message.channel,"Sorry "+message.author.mention+" You are not in a vocal channel")
                 return
-            yield from vocalsys.join(message.author.voice.voice_channel)
+            if modo or (message.author.voice.voice_channel.id == "295693183046778880" and message.channel.id == "285558746162397184"):
+                yield from vocalsys.join(message.author.voice.voice_channel,message.channel)
+                yield from client.send_message(message.channel,"Join Vocal and binding to "+message.channel.mention)
+            else:
+                yield from client.send_message(message.channel,"Sorry "+message.author.mention+" You are not in the music channel")
 ##            vocal = True
 ##            vocalco = yield from client.join_voice_channel(message.author.voice.voice_channel)
 ##            vocaltimer = VocalTimeout(60)
@@ -456,16 +471,22 @@ def on_message(message):
         if "https://www.youtube.com" in tag:
             url = tag
         else:
-            tag = tag.split(" ")
-            while "" in tag: tag.remove("")
-            url = "https://www.youtube.com/results?search_query="
-            first = True
-            for i in tag:
-                if not first: url += "+"
-                url += tag
-                first = False
-            url += "&page=1"
+            query = urllibp.urlencode({"search_query":tag})
+            html = urllibr.urlopen("http://www.youtube.com/results?"+query)
+            results = re.findall(r'href=\"\/watch\?v=(.{11})', html.read().decode())
+            url = "http://www.youtube.com/watch?v=" + results[0]
+            print(url)
+##            tag = tag.split(" ")
+##            while "" in tag: tag.remove("")
+##            url = "https://www.youtube.com/results?search_query="
+##            first = True
+##            for i in tag:
+##                if not first: url += "+"
+##                url += i
+##                first = False
+##            url += "&page=1"
         yield from vocalsys.append(url)
+        yield from client.send_message(message.channel,"Enqueued song : ```"+vocalsys.queue[-1].title+" by "+vocalsys.queue[-1].uploader+"```")
         vocalsys.play()
     if message.content.startswith(prefix+'soundeffect') and serv and modo and (not restricted):
         if not vocalsys.vocal:
@@ -475,12 +496,20 @@ def on_message(message):
         vocalsys.play()
     if message.content.startswith(prefix+'skip') and serv and (not restricted):
         vocalsys.skip()
+        #yield from client.send_message(message.channel,"Song has been skipped")
     if message.content.startswith(prefix+'showqueue') and serv and (not restricted):
+        if vocalsys.current is not None:
+            cur = "Currently Playing : **"+vocalsys.current.title+"** by "+vocalsys.current.uploader+"\n"
+            #except: cur = "Currently Playing : **Sound Effect**\n"
+        else:
+            cur = "**No currently playing song**"
         string = "Vocal Queue :```diff\n"
         for i in vocalsys.queue:
-            string += ("+**"+i.title+"** by "+i.uploader+"\n")
+            try: string += ("+"+i.title+" by "+i.uploader+"\n")
+            except: string += ("+Sound Effect\n")
         string += "```"
-        yield from client.send_message(message.channel,string)
+        if len(vocalsys.queue) == 0: string="```diff\n-Empty Queue\n```"
+        yield from client.send_message(message.channel,cur+string)
     #helping commands
     if message.content.startswith(prefix+'help'):
         if fr: f = open("help_FR.txt","r")
