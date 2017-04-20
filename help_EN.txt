@@ -12,4 +12,10 @@ Command Help :
 /report @mention - Report mentionned members
 /gods list - Show the list of the gods of the server
 /gods pray name - Pray the god called *name*
+/quote IDmessage [IDchannel] - Quote message with ID indicated, channel ID is an optional argument, if it isn't indicated message will be searched directly in the current channel
+/claimprogram ID/path - Get and post the program from a computer or turtle in Minecraft where ID is computer/turtle ID and path the path to the program
+/voca on|off - Make Join or Leave the vocal to the bot, for joining you have to be in music channels
+/play yt - Add to the queue the youtube video given, where 'yt' is an url to the video or a simple youtube search (like '/yt random youtube video')
+/showqueue - Show the queue
+/skip - Skip the current video
 ```
