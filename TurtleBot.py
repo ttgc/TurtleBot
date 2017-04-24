@@ -14,11 +14,13 @@ from INIfiles import *
 from random import *
 from mojangapi import *
 from VocalUtilities import *
+from AmperMusicAPI import *
 
-global prefix,logf,config,lang,guild,report,pray,statut,vocalsys
+global prefix,logf,config,lang,guild,report,pray,statut,vocalsys,amper
 prefix = "/"
 statut = discord.Game(name="/help")
 vocalsys = VocalSystem()
+amper = AmperMusicAPI(token_turtle)
 
 logger = logging.getLogger('discord')
 logging.basicConfig(level=logging.INFO)
@@ -97,7 +99,7 @@ def on_ready():
 @client.event
 @asyncio.coroutine
 def on_message(message):
-    global prefix,logf,lang,strikes,guild,guildlink,report,pray,statut,vocalsys
+    global prefix,logf,lang,strikes,guild,guildlink,report,pray,statut,vocalsys,amper
     #check bot
     if message.author.bot: return
     #check roles
@@ -121,6 +123,9 @@ def on_message(message):
     #check langage
     fr = False
     if lang[str(message.author.id)] == "FR": fr = True
+    #check unexistant commands
+    if message.content.startswith(prefix+'player'):
+        return
     #general commands
     if message.content.startswith(prefix+'yay') and (not restricted):
         f = open("YAY.png","rb")
@@ -507,8 +512,8 @@ def on_message(message):
         #yield from client.send_message(message.channel,"Song has been skipped")
     if message.content.startswith(prefix+'showqueue') and serv and (not restricted):
         if vocalsys.current is not None:
-            cur = "Currently Playing : **"+vocalsys.current.title+"** by "+vocalsys.current.uploader+"\n"
-            #except: cur = "Currently Playing : **Sound Effect**\n"
+            try: cur = "Currently Playing : **"+vocalsys.current.title+"** by "+vocalsys.current.uploader+"\n"
+            except: cur = "Currently Playing : **Sound Effect**\n"
         else:
             cur = "**No currently playing song**"
         string = "Vocal Queue :```diff\n"
@@ -518,6 +523,45 @@ def on_message(message):
         string += "```"
         if len(vocalsys.queue) == 0: string="```diff\n-Empty Queue\n```"
         yield from client.send_message(message.channel,cur+string)
+    if message.content.startswith(prefix+'amper') and serv and (not restricted):
+        if message.content.startswith(prefix+'amper descriptors'):
+            descript = amper.descriptors()
+            ls = ""
+            for i in descript['descriptors']:
+                ls += i['name']+" (ID="+i['id']+")\n"
+            yield from client.send_message(message.channel,"Following Amper Music Descriptors are available :```\n"+ls+"```")
+            return
+        if not vocalsys.vocal:
+            yield from client.send_message(message.channel,message.author.mention+"Use /vocal on before using vocal commands")
+            return
+        msg = message.content.replace(prefix+'amper ',"")
+        tags = msg.split(" ")
+        while "" in tags: tags.remove("")
+        tps = time.localtime()
+        percent = []
+        music = AmperGeneratorProcess(tags[0],int(tags[1]),str(tps.tm_mday)+"_"+str(tps.tm_mon)+"_"+str(tps.tm_year)+"_"+str(tps.tm_hour)+"_"+str(tps.tm_min)+"_"+str(tps.tm_sec),"AmperMusic/",amper)
+        music.start()
+        while not music.finished:
+            music.process.update()
+            vocalsys.timer.reset()
+            if not music.process.progress in percent:
+                yield from client.send_message(message.channel,"Music Generation : "+str(music.process.progress)+"%")
+                percent.append(music.process.progress)
+            time.sleep(0.5)
+        music.process.update()
+        yield from client.send_message(message.channel,"Preparing the song for playing...")
+        music.join()
+##        music = amper.create(amper.generate_timeline(tags[0],tags[1]),str(tps.tm_mday)+"_"+str(tps.tm_mon)+"_"+str(tps.tm_year)+"_"+str(tps.tm_hour)+"_"+str(tps.tm_min)+"_"+str(tps.tm_sec))
+##        file = amper.download(music,"AmperMusic/")
+        yield from vocalsys.append(music.path,False)
+        vocalsys.play()
+        if len(os.listdir("AmperMusic")) > 20:
+            ls = os.listdir("AmperMusic")
+            fdel = ls[0]
+            for i in ls:
+                if os.stat("AmperMusic/"+i).st_ctime < os.stat("AmperMusic/"+fdel).st_ctime:
+                    fdel = i
+            os.remove("AmperMusic/"+fdel)
     #helping commands
     if message.content.startswith(prefix+'help'):
         if fr: f = open("help_FR.txt","r")
