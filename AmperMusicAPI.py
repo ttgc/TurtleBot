@@ -7,7 +7,7 @@ import time
 #import json
 from threading import Thread
 
-token_turtle = 'nytktIllKnIFa2ACEPHiAJ0jKfNhV7WI8ZIfUKp5E3ZN5lpJ5qu2Dejc67ycuL3w'
+token_turtle = 'FALSE TOKEN INSERT YOUR AMPER TOKEN TO USE THIS'
 
 class AmperMusicAPI:
     def __init__(self,token):
