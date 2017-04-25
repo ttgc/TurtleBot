@@ -632,7 +632,7 @@ def on_member_remove(member):
 
 @asyncio.coroutine
 def main_task():
-    yield from client.login("MjM0NzAzOTQ5NDMxNzAxNTE1.C7GGhg.Wu8emIflGvVLm7GejPay_U8Bufg")
+    yield from client.login("")
     yield from client.connect()
     yield from client.wait_until_ready()
 
