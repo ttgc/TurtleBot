@@ -1,3 +1,32 @@
+Turtle Update - *Not Released Yet* - **v0.1.2**
+======
+## Added Features :  
+**/ping** :  
+```
+Calculate ping and show it
+```  
+**New god** :
+```
+Added a new god for continue to follow mc lore
+```
+
+## Bug Fix :
+**/amper** - *Not Fixed*  
+```
+Bug has been found for playing amper generated song
+Will be corrected as soon as possible
+```  
+**/soundeffect** - *Not Fixed*  
+```
+Bug has been found for playing local song
+Will be corrected as soon as possible
+```  
+**Play Queue** - *Not Fixed*  
+```
+The queue seems to don't erase finished or skipped song
+Will be corrected as soon as possible
+``` 
+
 Turtle Update - *24/04/17* - **v0.1.1**
 ======
 
@@ -11,17 +40,17 @@ Turtle Update - *24/04/17* - **v0.1.1**
 /amper descrip time - Generate and play music with AmperMusic
 ```  
 
-## Bug Fix
+## Bug Fix :
 **/showqueue bug** - *Fixed*  
 ```
 Bug on /showqueue when a music not coming from yt was in the queue
 ```  
-**incompatibility with Golem Bot (https://github.com/Indianajaune/Golem)** - *Partially Fixed*  
+**incompatibility with Golem Bot (https://github.com/Indianajaune/Golem)** - *Fixed*  
 ```
 Following commands of golem are generating incompatibilities with Turtle bot :
 /player - Corrected
-/play - Waiting for Golem Update
-/skip - Waiting for Golem Update
+/play - Corrected
+/skip - Corrected
 ```  
 
 
@@ -56,7 +85,7 @@ Make the bot timeout and automatically disconnect from vocal when inactiv
 Currently set to 1 min
 ```
 
-## Changed Features
+## Changed Features :
 **/quote**  
 ```
 /quote has been rewritten, need ID to work now, prototyp :
