@@ -584,6 +584,12 @@ def on_message(message):
         if (not modo) and serv:
             if fr: yield from client.send_message(message.channel,"Je t'ai envoyé un message privé "+message.author.mention)
             else: yield from client.send_message(message.channel,"I've sent you a private message "+message.author.mention)
+    if message.content.startswith(prefix+'ping') and (not restricted):
+        tps_start = time.clock()
+        yield from client.send_message(message.channel,":ping_pong: pong ! :ping_pong:")
+        tps_end = time.clock()
+        ping = round((tps_end-tps_start)*1000)
+        yield from client.send_message(message.channel,"ping value is currently : `"+str(ping)+" ms`")
     if message.content.startswith(prefix+'debug') and message.author == message.server.owner:
         msg = (message.content).replace(prefix+'debug ',"")
         print("running debug instruction : "+msg)
