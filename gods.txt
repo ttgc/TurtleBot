@@ -18,3 +18,4 @@ Hermes
 Arkenzus
 Cthulhu
 Notch
+Hazoret
