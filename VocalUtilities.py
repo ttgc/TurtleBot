@@ -21,7 +21,8 @@ class VocalSystem:
     def __init__(self):
         self.vocal = False
         self.co = None
-        self.timer = VocalTimeout(60)
+        self.loop = asyncio.get_event_loop()
+        self.timer = VocalTimeout(60,self.loop)
         self.queue = []
         self.current = None
         self.is_playing = False
@@ -42,7 +43,7 @@ class VocalSystem:
         if yt:
             song = yield from self.co.create_ytdl_player(path,ytdl_options={"noplaylist":True,"playlist_items":"1"},after=self.after)
         else:
-            song = self.co.create_ffmep_player(path,after=self.after)
+            song = self.co.create_ffmpeg_player(path,after=self.after)
         self.queue.append(song)
         self.timer.reset()
 
@@ -53,7 +54,7 @@ class VocalSystem:
             self.is_playing = False
             return
         self.is_playing = True
-        self.timer = VocalTimeout(60)
+        self.timer = VocalTimeout(60,self.loop)
         self.queue[0].start()
         self.current = self.queue[0]
         del(self.queue[0])
@@ -81,7 +82,7 @@ class VocalSystem:
         self.vocal = False
         yield from self.co.disconnect()
         self.co = None
-        self.timer = VocalTimeout(60)
+        self.timer = VocalTimeout(60,self.loop)
         self.queue = []
         self.current = None
         self.is_playing = False
@@ -93,14 +94,15 @@ class VocalSystem:
         yield from self.leave()
 
 class VocalTimeout(Thread):
-    def __init__(self,tmax):
+    def __init__(self,tmax,loop):
         Thread.__init__(self)
         self.timer = 0
         self.tmax = tmax
         self.from_ = None
         self.current = None
         self.timeout = False
-        self.loop = asyncio.get_event_loop()
+        self.loop = loop
+        #self.loop = asyncio.get_event_loop()
 
     def run(self):
         self.from_ = time.clock()
@@ -112,7 +114,7 @@ class VocalTimeout(Thread):
             time.sleep(0.01)
         self.timeout = True
         system = VocalSystem()
-        if self == system.timer:
+        if self == system.timer and system.vocal and (not system.is_playing):
             self.loop.create_task(system._timeout_leave())
             #loop = asyncio.get_event_loop()
             #asyncio.set_event_loop(loop)
