@@ -1,4 +1,4 @@
-Turtle Update - *Not Released Yet* - **v0.1.2**
+Turtle Update - *07/05/17* - **v0.1.2**
 ======
 ## Added Features :  
 **/ping** :  
