@@ -2,7 +2,6 @@ TODO List :
 ======
 
 ## Main Functions :  
-/ping  
 /reroll => **On dev**  
 
 ## Music Functions including :  
