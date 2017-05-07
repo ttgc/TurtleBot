@@ -21,10 +21,11 @@ Will be corrected as soon as possible
 Bug has been found for playing local song
 Will be corrected as soon as possible
 ```  
-**Play Queue** - *Not Fixed*  
+**Play Queue** - *Fixed*  
 ```
 The queue seems to don't erase finished or skipped song
-Will be corrected as soon as possible
+Bug was linked to vocal timeout in VocalUtilities.py
+No more problems
 ``` 
 
 Turtle Update - *24/04/17* - **v0.1.1**
