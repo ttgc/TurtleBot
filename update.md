@@ -11,15 +11,17 @@ Added a new god for continue to follow mc lore
 ```
 
 ## Bug Fix :
-**/amper** - *Not Fixed*  
+**/amper** - *Fixed ?*  
 ```
 Bug has been found for playing amper generated song
-Will be corrected as soon as possible
+Bug seems to have disappeared
+Cannot be reproducted
 ```  
-**/soundeffect** - *Not Fixed*  
+**/soundeffect** - *Fixed ?*  
 ```
 Bug has been found for playing local song
-Will be corrected as soon as possible
+Bug seems to have disappeared
+Cannot be reproducted
 ```  
 **Play Queue** - *Fixed*  
 ```
